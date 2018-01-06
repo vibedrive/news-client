@@ -1,0 +1,41 @@
+{
+  "name": "rss-reader",
+  "private": true,
+  "version": "1.0.0",
+  "description": "music tech rss reader",
+  "main": "index.js",
+  "scripts": {
+    "start": "node bin/watch",
+    "build": "node bin/build",
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vibedrive/rss-reader.git"
+  },
+  "keywords": [
+    "rss"
+  ],
+  "author": "kareniel",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vibedrive/rss-reader/issues"
+  },
+  "homepage": "https://github.com/vibedrive/rss-reader#readme",
+  "devDependencies": {
+    "b": "^2.0.1",
+    "browserify": "^15.0.0",
+    "budo": "^10.0.4",
+    "loose-envify": "^1.3.1",
+    "mkdirp": "^0.5.1",
+    "uglifyify": "^4.0.5",
+    "yo-yoify": "^4.3.0"
+  },
+  "dependencies": {
+    "choo": "^6.6.1",
+    "nanocomponent": "^6.5.0",
+    "parse-rss": "^1.0.3",
+    "rss-parser": "^2.11.0",
+    "run-parallel": "^1.1.6"
+  }
+}
