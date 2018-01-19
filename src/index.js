@@ -1,10 +1,12 @@
 var sources = process.env.sources
-var parser = require('rss-parser')
-var parallel = require('run-parallel')
+var request = require('request-promise-native')
 var choo = require('choo')
 var html = require('choo/html')
 const dateOpts = {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
 }
 
 var Spinner = require('bytespin')
@@ -16,39 +18,29 @@ app.use(function (state, emitter) {
   state.sources = sources.split('\n').filter(x => x)
   state.fetching = true
   state.entries = []
+  state.error = ''
 
   emitter.on('DOMContentLoaded', function () {
     fetchFeeds()
   })
 
-  function fetchFeeds () {
-    var jobs = state.sources.map(fetchingJob)
-
-    parallel(jobs, function () {
-      state.entries.sort(sortByDate)
-      state.fetching = false
-
+  async function fetchFeeds () {
+    try {
+      state.entries = await request.post({
+        url: 'https://mulberry-entrance.glitch.me/entries',
+        body: { sources: state.sources },
+        json: true
+      })
+    } catch (err) {
+      console.error(err)
+      state.error = `Couldn't fetch feeds :(`
       emitter.emit('render')
-    })
-  }
-
-  function fetchingJob (source) {
-    return function (done) {
-      try {
-        var url = new URL(source)
-        parser.parseURL(url.href, function (err, parsed) {
-          if (err) return console.error(err)
-          parsed.feed.entries.forEach(entry => {
-            entry.date = new Date(entry.isoDate)
-            state.entries.push(entry)
-          })
-
-          done()
-        })
-      } catch (err) {
-        console.info(err)
-      }
+      return
     }
+
+    state.fetching = false
+
+    emitter.emit('render')
   }
 })
 
@@ -61,7 +53,7 @@ function mainView (state, emit) {
       <p>News</p>
       ${spinner.render(state.fetching)}
       <ul class="pl0">
-        ${state.entries.slice(0, 50).map(entryEl)}
+        ${state.entries.map(entryEl)}
       </ul>
     </main>`
 }
@@ -71,14 +63,8 @@ function entryEl (entry) {
     <li class="list mb3">
       <a href=${entry.link}>${entry.title}</a>
       <br>
-      ${entry.date.toLocaleDateString('en-CA', dateOpts)}
+      ${new Date(entry.date).toLocaleDateString('en-CA', dateOpts)}
     </li>`
-}
-
-function sortByDate (a, b) {
-  if (a.date > b.date) return -1
-  if (a.date < b.date) return 1
-  return 0
 }
 
 function sidebar (state, emit) {
